@@ -241,7 +241,7 @@
 </template>
 
 <script>
-
+	import $http from '@/common/api/request.js';
 	export default {
 
 		data() {
@@ -263,7 +263,9 @@
 			 * 分次请求未作整合
 			 */
 			async loadData() {
-				let carouselList = await this.$api.json('carouselList');
+				let carouselList = await $http.request({
+					url: '/product/banner',
+				});
 				this.titleNViewBackground = carouselList[0].background;
 				this.swiperLength = carouselList.length;
 				this.carouselList = carouselList;
