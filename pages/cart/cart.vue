@@ -118,7 +118,6 @@
 				let list = await $http.request({
 					url:"/customer/cart"
 				})
-				console.log(list);
 				let cartList = list.map(item=>{
 					item.checked = true;
 					return item;
