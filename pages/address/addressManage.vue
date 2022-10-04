@@ -10,15 +10,17 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">地址</text>
-			<text @click="chooseLocation" class="input">
+			<input class="input" type="text" v-model="addressData.address" placeholder="地址" placeholder-class="placeholder" />
+		
+		<!-- 	<text @click="chooseLocation" class="input">
 				{{addressData.addressName}}
 			</text>
-			<text class="yticon icon-shouhuodizhi"></text>
+			<text class="yticon icon-shouhuodizhi"></text> -->
 		</view>
-		<view class="row b-b"> 
+<!-- 		<view class="row b-b"> 
 			<text class="tit">门牌号</text>
 			<input class="input" type="text" v-model="addressData.area" placeholder="楼号、门牌" placeholder-class="placeholder" />
-		</view>
+		</view> -->
 		
 		<view class="row default-row">
 			<text class="tit">设为默认</text>
@@ -29,15 +31,17 @@
 </template>
 
 <script>
+	import $http from '@/common/api/request.js'
 	export default {
 		data() {
 			return {
 				addressData: {
+					id: '',
 					name: '',
 					mobile: '',
-					addressName: '在地图选择',
+					// addressName: '在地图选择',
 					address: '',
-					area: '',
+					// area: '',
 					default: false
 				}
 			}
@@ -46,7 +50,6 @@
 			let title = '新增收货地址';
 			if(option.type==='edit'){
 				title = '编辑收货地址'
-				
 				this.addressData = JSON.parse(option.data)
 			}
 			this.manageType = option.type;
@@ -70,7 +73,7 @@
 			},
 			
 			//提交
-			confirm(){
+			async confirm(){
 				let data = this.addressData;
 				if(!data.name){
 					this.$api.msg('请填写收货人姓名');
@@ -80,18 +83,29 @@
 					this.$api.msg('请输入正确的手机号码');
 					return;
 				}
+				// if(!data.address){
+				// 	this.$api.msg('请在地图选择所在位置');
+				// 	return;
+				// }
 				if(!data.address){
-					this.$api.msg('请在地图选择所在位置');
+					this.$api.msg('请填写地址信息');
 					return;
 				}
-				if(!data.area){
-					this.$api.msg('请填写门牌号信息');
-					return;
+				if (data.id===""){
+					data.id=null
 				}
+				const ret =$http.requestSync({
+					url:'/user/address',
+					method:"post",
+					data: data,
+					header: {
+						ContentType: "application/json"
+					}
+				});// todo 增加判断写入错误
 				
 				//this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
-				this.$api.prePage().refreshList(data, this.manageType);
-				this.$api.msg(`地址${this.manageType=='edit' ? '修改': '添加'}成功`);
+				// this.$api.prePage().refreshList(data, this.manageType);
+				// this.$api.msg(`地址${this.manageType=='edit' ? '修改': '添加'}成功`);
 				setTimeout(()=>{
 					uni.navigateBack()
 				}, 800)
