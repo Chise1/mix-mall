@@ -2,10 +2,10 @@ import store from '@/store/index.js'
 export default {
 	common: {
 		baseUrl: "http://127.0.0.1:8000/api",
+		mediaUrl:"http://127.0.0.1:8000",
 		data: {},
 		header: {
-			"Content-Type": "application/json",
-			"Content-Type": "application/x-www-form-urlencoded"
+			"Content-Type": "application/json"
 		},
 		method: "GET",
 		dataType: "json"

@@ -15,8 +15,8 @@
 			<view class="titleNview-background" :style="{backgroundColor:titleNViewBackground}"></view>
 			<swiper class="carousel" circular @change="swiperChange">
 				<swiper-item v-for="(item, index) in carouselList" :key="index" class="carousel-item"
-					@click="navToDetailPage({title: '轮播广告'})">
-					<image :src="item.src" />
+					@click="navToDetailPage(item.goods_id)">
+					<image :src="item.imgUrl" />
 				</swiper-item>
 			</swiper>
 			<!-- 自定义swiper指示器 -->
@@ -198,7 +198,7 @@
 		</view>
 
 		<view class="guess-section">
-			<view v-for="(item, index) in goodsList" :key="index" class="guess-item" @click="navToDetailPage(item)">
+			<view v-for="(item, index) in goodsList" :key="index" class="guess-item" @click="navToDetailPage(item.id)">
 				<view class="image-wrapper">
 					<image :src="item.image" mode="aspectFill"></image>
 				</view>
@@ -213,6 +213,7 @@
 
 <script>
 	import $http from '@/common/api/request.js';
+
 	export default {
 
 		data() {
@@ -235,19 +236,24 @@
 			 * 分次请求未作整合
 			 */
 			async loadData() {
-				let carouselList = await $http.request({
+				$http.request({
 					url: '/product/banner',
-				});
-				this.titleNViewBackground = carouselList[0].background;
-				this.swiperLength = carouselList.length;
-				this.carouselList = carouselList;
-
-				let goodsList = await $http.request({
+				}).then(carouselList=>{
+					this.titleNViewBackground = carouselList[0].background;
+					this.swiperLength = carouselList.length;
+					carouselList.forEach(item=>{
+						item.imgUrl=$http.common.mediaUrl+item.imgUrl;
+						this.carouselList.push(item)
+					});
+				})
+				$http.request({
 					url: "/product/goods",
-				});
-				this.goodsList = goodsList || [];
-				this.icons = await $http.request({
+				}).then(goodsList=>{this.goodsList = goodsList || [];
+				})
+				$http.request({
 					url: '/product/icons'
+				}).then(icons=>{
+					this.icons = icons
 				})
 			},
 			//轮播图切换修改背景色
@@ -257,9 +263,8 @@
 				this.titleNViewBackground = this.carouselList[index].background;
 			},
 			//详情页
-			navToDetailPage(item) {
+			navToDetailPage(id) {
 				//测试数据没有写id，用title代替
-				let id = item.title;
 				uni.navigateTo({
 					url: `/pages/product/product?id=${id}`
 				})
