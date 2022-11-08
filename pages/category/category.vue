@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<scroll-view scroll-y class="left-aside">
-			<view v-for="item in flist" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}" @click="tabtap(item)">
+			<view v-for="item in flist" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}" @click="tabtap(item.id)">
 				{{item.name}}
 			</view>
 		</scroll-view>
@@ -9,8 +9,8 @@
 			<view v-for="item in slist" :key="item.id" class="s-list" :id="'main-'+item.id">
 				<text class="s-item">{{item.name}}</text>
 				<view class="t-list">
-					<view @click="navToList(item.id, titem.id)" v-if="titem.pid === item.id" class="t-item" v-for="titem in tlist" :key="titem.id">
-						<image :src="titem.picture"></image>
+					<view @click="navToList(item.id, titem.id)" v-if="titem.parent_id === item.id" class="t-item" v-for="titem in tlist" :key="titem.id">
+						<image :src="titem.image"></image>
 						<text>{{titem.name}}</text>
 					</view>
 				</view>
@@ -21,7 +21,7 @@
 
 <script>
 	import $http from '@/common/api/request.js'
-	
+
 	export default {
 		data() {
 			return {
@@ -33,34 +33,40 @@
 				tlist: [],
 			}
 		},
-		onLoad(){
-			this.loadData();
+		onLoad(options){
+			this.loadData(options.id);
 		},
 		methods: {
-			async loadData(){
+			async loadData(id){
 				let list = await $http.request({
 					url:"/product/cates"
 				})
-				console.log(list);
 				// let list = await this.$api.json('cateList');
 				list.forEach(item=>{
-					if(!item.pid){
+					if (item.image){
+						item.image=$http.common.mediaUrl+item.image;
+					}
+					if(!item.parent_id){
 						this.flist.push(item);  //pid为父级id, 没有pid或者pid=0是一级分类
-					}else if(!item.picture){
+					}else if(item.category_type==2){
 						this.slist.push(item); //没有图的是2级分类
 					}else{
 						this.tlist.push(item); //3级分类
 					}
-				}) 
+				})
+				// todo 跳转到该页面精确定位指定位置
+				// if (id){
+				// 	this.tabtap(itemid);
+				// }
 			},
 			//一级分类点击
-			tabtap(item){
+			tabtap(id){
 				if(!this.sizeCalcState){
 					this.calcSize();
 				}
-				
-				this.currentId = item.id;
-				let index = this.slist.findIndex(sitem=>sitem.pid === item.id);
+
+				this.currentId = id;
+				let index = this.slist.findIndex(sitem=>sitem.pid === id);
 				this.tabScrollTop = this.slist[index].top;
 			},
 			//右侧栏滚动
@@ -176,7 +182,7 @@
 		font-size: 26upx;
 		color: #666;
 		padding-bottom: 20upx;
-		
+
 		image{
 			width: 140upx;
 			height: 140upx;

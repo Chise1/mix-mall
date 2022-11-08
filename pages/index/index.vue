@@ -28,7 +28,7 @@
 		</view>
 		<!-- 分类 -->
 		<view class="cate-section">
-			<view :id="item.id" class="cate-item" v-for='(item,index) in icons' :key="item.id">
+			<view :id="item.id" class="cate-item" v-for='(item,index) in icons' :key="item.id" @click="navToCategory(item.id)">
 				<image :src="item.image"></image>
 				<text>{{item.name}}</text>
 			</view>
@@ -226,7 +226,6 @@
 				icons: [] // 分类
 			};
 		},
-
 		onLoad() {
 			this.loadData();
 		},
@@ -238,22 +237,25 @@
 			async loadData() {
 				$http.request({
 					url: '/product/banner',
-				}).then(carouselList=>{
+				}).then(carouselList => {
 					this.titleNViewBackground = carouselList[0].background;
 					this.swiperLength = carouselList.length;
-					carouselList.forEach(item=>{
-						item.imgUrl=$http.common.mediaUrl+item.imgUrl;
+					carouselList.forEach(item => {
+						item.imgUrl = $http.common.mediaUrl + item.imgUrl;
 						this.carouselList.push(item)
 					});
 				})
 				$http.request({
 					url: "/product/goods",
-				}).then(goodsList=>{this.goodsList = goodsList || [];
+				}).then(goodsList => {this.goodsList = goodsList || [];
 				})
 				$http.request({
 					url: '/product/icons'
-				}).then(icons=>{
-					this.icons = icons
+				}).then(icons => {
+					icons.forEach(item => {
+						item.image = $http.common.mediaUrl + item.image;
+						this.icons.push(item);
+					});
 				})
 			},
 			//轮播图切换修改背景色
@@ -265,10 +267,19 @@
 			//详情页
 			navToDetailPage(id) {
 				//测试数据没有写id，用title代替
-				uni.navigateTo({
-					url: `/pages/product/product?id=${id}`
-				})
+				if (id) {
+					uni.navigateTo({
+						url: `/pages/product/product?id=${id}`
+					})
+				}
 			},
+			navToCategory(id){ // todo 需要精确定位到对应的分类去，还没想好方法
+				if (id){
+					uni.switchTab({
+						url: `/pages/category/category?id=${id}`
+					})
+				}
+			}
 		},
 		// #ifndef MP
 		// 标题栏input搜索框点击
