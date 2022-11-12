@@ -1,15 +1,18 @@
 <template>
 	<view class="content">
 		<scroll-view scroll-y class="left-aside">
-			<view v-for="item in flist" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}" @click="tabtap(item.id)">
+			<view v-for="item in flist" :key="item.id" class="f-item b-b" :class="{active: item.id === currentId}"
+				@click="tabtap(item.id)">
 				{{item.name}}
 			</view>
 		</scroll-view>
-		<scroll-view scroll-with-animation scroll-y class="right-aside" @scroll="asideScroll" :scroll-top="tabScrollTop">
+		<scroll-view scroll-with-animation scroll-y class="right-aside" @scroll="asideScroll"
+			:scroll-top="tabScrollTop">
 			<view v-for="item in slist" :key="item.id" class="s-list" :id="'main-'+item.id">
 				<text class="s-item">{{item.name}}</text>
 				<view class="t-list">
-					<view @click="navToList(item.id, titem.id)" v-if="titem.parent_id === item.id" class="t-item" v-for="titem in tlist" :key="titem.id">
+					<view @click="navToList(item.id, titem.id)" v-if="titem.parent_id === item.id" class="t-item"
+						v-for="titem in tlist" :key="titem.id">
 						<image :src="titem.image"></image>
 						<text>{{titem.name}}</text>
 					</view>
@@ -33,24 +36,24 @@
 				tlist: [],
 			}
 		},
-		onLoad(options){
+		onLoad(options) {
 			this.loadData(options.id);
 		},
 		methods: {
-			async loadData(id){
+			async loadData(id) {
 				let list = await $http.request({
-					url:"/product/cates"
+					url: "/product/cates"
 				})
 				// let list = await this.$api.json('cateList');
-				list.forEach(item=>{
-					if (item.image){
-						item.image=$http.common.mediaUrl+item.image;
+				list.forEach(item => {
+					if (item.image) {
+						item.image = $http.media(item.image);
 					}
-					if(!item.parent_id){
-						this.flist.push(item);  //pid为父级id, 没有pid或者pid=0是一级分类
-					}else if(item.category_type==2){
+					if (!item.parent_id) {
+						this.flist.push(item); //pid为父级id, 没有pid或者pid=0是一级分类
+					} else if (item.category_type == 2) {
 						this.slist.push(item); //没有图的是2级分类
-					}else{
+					} else {
 						this.tlist.push(item); //3级分类
 					}
 				})
@@ -60,30 +63,30 @@
 				// }
 			},
 			//一级分类点击
-			tabtap(id){
-				if(!this.sizeCalcState){
+			tabtap(id) {
+				if (!this.sizeCalcState) {
 					this.calcSize();
 				}
 
 				this.currentId = id;
-				let index = this.slist.findIndex(sitem=>sitem.pid === id);
+				let index = this.slist.findIndex(sitem => sitem.pid === id);
 				this.tabScrollTop = this.slist[index].top;
 			},
 			//右侧栏滚动
-			asideScroll(e){
-				if(!this.sizeCalcState){
+			asideScroll(e) {
+				if (!this.sizeCalcState) {
 					this.calcSize();
 				}
 				let scrollTop = e.detail.scrollTop;
-				let tabs = this.slist.filter(item=>item.top <= scrollTop).reverse();
-				if(tabs.length > 0){
+				let tabs = this.slist.filter(item => item.top <= scrollTop).reverse();
+				if (tabs.length > 0) {
 					this.currentId = tabs[0].pid;
 				}
 			},
 			//计算右侧栏每个tab的高度等信息
-			calcSize(){
+			calcSize() {
 				let h = 0;
-				this.slist.forEach(item=>{
+				this.slist.forEach(item => {
 					let view = uni.createSelectorQuery().select("#main-" + item.id);
 					view.fields({
 						size: true
@@ -95,7 +98,7 @@
 				})
 				this.sizeCalcState = true;
 			},
-			navToList(sid, tid){
+			navToList(sid, tid) {
 				uni.navigateTo({
 					url: `/pages/product/list?fid=${this.currentId}&sid=${sid}&tid=${tid}`
 				})
@@ -114,12 +117,14 @@
 	.content {
 		display: flex;
 	}
+
 	.left-aside {
 		flex-shrink: 0;
 		width: 200upx;
 		height: 100%;
 		background-color: #fff;
 	}
+
 	.f-item {
 		display: flex;
 		align-items: center;
@@ -129,10 +134,12 @@
 		font-size: 28upx;
 		color: $font-color-base;
 		position: relative;
-		&.active{
+
+		&.active {
 			color: $base-color;
 			background: #f8f8f8;
-			&:before{
+
+			&:before {
 				content: '';
 				position: absolute;
 				left: 0;
@@ -147,12 +154,13 @@
 		}
 	}
 
-	.right-aside{
+	.right-aside {
 		flex: 1;
 		overflow: hidden;
 		padding-left: 20upx;
 	}
-	.s-item{
+
+	.s-item {
 		display: flex;
 		align-items: center;
 		height: 70upx;
@@ -160,19 +168,22 @@
 		font-size: 28upx;
 		color: $font-color-dark;
 	}
-	.t-list{
+
+	.t-list {
 		display: flex;
 		flex-wrap: wrap;
 		width: 100%;
 		background: #fff;
 		padding-top: 12upx;
-		&:after{
+
+		&:after {
 			content: '';
 			flex: 99;
 			height: 0;
 		}
 	}
-	.t-item{
+
+	.t-item {
 		flex-shrink: 0;
 		display: flex;
 		justify-content: center;
@@ -183,7 +194,7 @@
 		color: #666;
 		padding-bottom: 20upx;
 
-		image{
+		image {
 			width: 140upx;
 			height: 140upx;
 		}

@@ -89,7 +89,8 @@
 		data() {
 			return {
 				tabCurrentIndex: 0,
-				navList: [{
+				navList: [
+					{
 						state: 0,
 						text: '全部',
 						loadingType: 'more',

@@ -2,13 +2,16 @@ import store from '@/store/index.js'
 export default {
 	common: {
 		baseUrl: "http://127.0.0.1:8000/api",
-		mediaUrl:"http://127.0.0.1:8000",
+		mediaUrl: "http://127.0.0.1:8000/media/",
 		data: {},
 		header: {
 			"Content-Type": "application/json"
 		},
 		method: "GET",
 		dataType: "json"
+	},
+	media(s) {
+		return this.common.mediaUrl + s
 	},
 	request(options = {}) {
 

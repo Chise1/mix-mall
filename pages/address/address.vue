@@ -33,7 +33,9 @@
 				const addresses = await $http.request({
 					url: '/user/addresses'
 				})
-				this.addressList = addresses
+				addresses.forEach((item)=>{
+					this.addressList.push(item)
+				})
 			},
 			//选择地址
 			checkAddress(item) {

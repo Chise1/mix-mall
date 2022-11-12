@@ -28,7 +28,8 @@
 		</view>
 		<!-- 分类 -->
 		<view class="cate-section">
-			<view :id="item.id" class="cate-item" v-for='(item,index) in icons' :key="item.id" @click="navToCategory(item.id)">
+			<view :id="item.id" class="cate-item" v-for='(item,index) in icons' :key="item.id"
+				@click="navToCategory(item.id)">
 				<image :src="item.image"></image>
 				<text>{{item.name}}</text>
 			</view>
@@ -241,19 +242,23 @@
 					this.titleNViewBackground = carouselList[0].background;
 					this.swiperLength = carouselList.length;
 					carouselList.forEach(item => {
-						item.imgUrl = $http.common.mediaUrl + item.imgUrl;
+						item.imgUrl = $http.media(item.imgUrl)
 						this.carouselList.push(item)
 					});
 				})
 				$http.request({
 					url: "/product/goods",
-				}).then(goodsList => {this.goodsList = goodsList || [];
+				}).then(goodsList => {
+					goodsList.forEach(item=>{
+						item.image=$http.media(item.image)
+					})
+					this.goodsList = goodsList || [];
 				})
 				$http.request({
 					url: '/product/icons'
 				}).then(icons => {
 					icons.forEach(item => {
-						item.image = $http.common.mediaUrl + item.image;
+						item.image = $http.media(item.image);
 						this.icons.push(item);
 					});
 				})
@@ -273,8 +278,8 @@
 					})
 				}
 			},
-			navToCategory(id){ // todo 需要精确定位到对应的分类去，还没想好方法
-				if (id){
+			navToCategory(id) { // todo 需要精确定位到对应的分类去，还没想好方法
+				if (id) {
 					uni.switchTab({
 						url: `/pages/category/category?id=${id}`
 					})

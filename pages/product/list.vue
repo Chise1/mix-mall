@@ -21,10 +21,10 @@
 				<view class="image-wrapper">
 					<image :src="item.image" mode="aspectFill"></image>
 				</view>
-				<text class="title clamp">{{item.title}}</text>
+				<text class="title clamp">{{item.name}}</text>
 				<view class="price-box">
 					<text class="price">{{item.price}}</text>
-					<text>已售 {{item.sales}}</text>
+					<text>已售 {{item.sale_num}}</text>
 				</view>
 			</view>
 		</view>
@@ -65,7 +65,7 @@
 				cateId: 0, //已选三级分类id
 				priceOrder: 0, //1 价格从低到高 2价格从高到低
 				cateList: [],
-				goodsList: []
+				goodsList: [],
 			};
 		},
 
@@ -91,22 +91,25 @@
 		},
 		//加载更多
 		onReachBottom() {
-			this.loadData();
+			this.loadData('more');
 		},
 		methods: {
 			//加载分类
 			async loadCateList(fid, sid) {
-				let list = await this.$api.json('cateList');
-				let cateList = list.filter(item => item.pid == fid);
+				let list = await $http.request({
+					url: "/product/cates"
+				});
+				let cateList = list.filter(item => item.parent_id == fid);
 
 				cateList.forEach(item => {
-					let tempList = list.filter(val => val.pid == item.id);
+					let tempList = list.filter(val => val.parent_id == item.id);
 					item.child = tempList;
 				})
 				this.cateList = cateList;
 			},
 			//加载商品 ，带下拉刷新和上滑加载
 			async loadData(type = 'add', loading) {
+				let goodsList = [];
 				//没有更多直接返回
 				if (type === 'add') {
 					if (this.loadingType === 'nomore') {
@@ -116,32 +119,45 @@
 				} else {
 					this.loadingType = 'more'
 				}
-
-				let goodsList = await $http.request({
-					url: '/product/goods'
-				})
-
-
-				if (type === 'refresh') {
-					this.goodsList = [];
-				}
-				//筛选，测试数据直接前端筛选了
-				if (this.filterIndex === 1) {
-					goodsList.sort((a, b) => b.sales - a.sales)
-				}
-				if (this.filterIndex === 2) {
-					goodsList.sort((a, b) => {
+				let urls = '/product/goods?category_id='+this.cateId
+				if (this.goodsList.length > 0 && type !== 'refresh') {
+					urls += '&next=' + this.goodsList[this.goodsList.length - 1].id
+					if (this.filterIndex === 1) {
+						urls = urls + "&filterIndex=sales"
+					} else if (this.filterIndex === 2) {
 						if (this.priceOrder == 1) {
-							return a.price - b.price;
+							urls = urls + "&filterIndex=price_min"
+						} else {
+							urls = urls + "&filterIndex=price_max"
 						}
-						return b.price - a.price;
+					}
+				} else {
+					if (this.filterIndex === 1) {
+						urls = urls + "&filterIndex=sales"
+					} else if (this.filterIndex === 2) {
+						if (this.priceOrder == 1) {
+							urls = urls + "&filterIndex=price_min"
+						} else {
+							urls = urls + "&filterIndex=price_max"
+						}
+					}
+				}
+				goodsList = await $http.request({
+					url: urls
+				})
+				goodsList.forEach(item=>{
+					item.image=$http.media(item.image)
+				})
+				if (type === 'refresh') {
+					this.goodsList = goodsList;
+				} else {
+					goodsList.forEach(item => {
+						this.goodsList.push(item);
 					})
 				}
 
-				this.goodsList = this.goodsList.concat(goodsList);
-
 				//判断是否还有下一页，有是more  没有是nomore(测试数据判断大于20就没有了)
-				this.loadingType = this.goodsList.length > 20 ? 'nomore' : 'more';
+				this.loadingType = goodsList.length > 0 ? 'nomore' : 'more';
 				if (type === 'refresh') {
 					if (loading == 1) {
 						uni.hideLoading()
@@ -195,7 +211,7 @@
 			//详情
 			navToDetailPage(item) {
 				//测试数据没有写id，用title代替
-				let id = item.title;
+				let id = item.id;
 				uni.navigateTo({
 					url: `/pages/product/product?id=${id}`
 				})

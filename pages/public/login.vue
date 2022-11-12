@@ -93,14 +93,12 @@
 						}
 					})
 					this.login(result.token);
-					console.log(result)
 					const info = await $http.request({
 						url: "/user/userInfo",
 						header:{
 							token:"token"
 						}
 					})
-					console.log(info);
 					this.userInfo(info);
 					uni.navigateBack();
 				} catch (err) {

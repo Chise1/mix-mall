@@ -7,12 +7,13 @@ const store = new Vuex.Store({
 	state: {
 		hasLogin: false,
 		userInfo: {},
-		token: null
+		token: null,
+		order: {}
 	},
 	mutations: {
 		login(state, data) {
 			state.hasLogin = true;
-			state.token=data;
+			state.token = data;
 			uni.setStorage({ //缓存用户登陆状态
 				key: 'token',
 				data: data
@@ -21,16 +22,19 @@ const store = new Vuex.Store({
 		logout(state) {
 			state.hasLogin = false;
 			state.userInfo = {};
-			state.token=null;
+			state.token = null;
 			uni.removeStorage({
 				key: 'userInfo'
 			})
 			uni.removeStorage({
-				key:'token'
+				key: 'token'
 			})
 		},
 		userInfo(state, userInfo) {
 			uni.setStorageSync('userInfo', JSON.stringify(userInfo))
+		},
+		setOrder(state, data) {
+			state.order = data
 		}
 	},
 	actions: {}
