@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
+import $http from '@/common/api/request.js'
 Vue.use(Vuex)
-
+// 是否有必要使用vuex？？？第二次登陆是否需要那啥》？
 const store = new Vuex.Store({
 	state: {
 		hasLogin: false,
 		userInfo: {},
-		token: null,
+		token: "",
 		order: {}
 	},
 	mutations: {
@@ -22,16 +22,20 @@ const store = new Vuex.Store({
 		logout(state) {
 			state.hasLogin = false;
 			state.userInfo = {};
-			state.token = null;
-			uni.removeStorage({
-				key: 'userInfo'
-			})
+			state.token = "";
 			uni.removeStorage({
 				key: 'token'
 			})
+			uni.removeStorage({
+				key:"userInfo"
+			})
 		},
-		userInfo(state, userInfo) {
-			uni.setStorageSync('userInfo', JSON.stringify(userInfo))
+		saveUserInfo(state, userInfo) {
+			state.userInfo=userInfo
+			uni.setStorage({
+				key:"userInfo",
+				data:userInfo
+			})
 		},
 		setOrder(state, data) {
 			state.order = data

@@ -3,8 +3,8 @@
 		<view class="list b-b" v-for="(item, index) in addressList" :key="index" @click="checkAddress(item)">
 			<view class="wrapper">
 				<view class="address-box">
-					<text v-if="item.default" class="tag">默认</text>
-					<text class="address">{{item.addressName}} {{item.area}}</text>
+					<text v-if="item.isDefault" class="tag">默认</text>
+					<text class="address">{{item.province}} {{item.city}} {{item.district}} {{item.address}}</text>
 				</view>
 				<view class="u-box">
 					<text class="name">{{item.name}}</text>
@@ -31,7 +31,8 @@
 		methods: {
 			async loadData() {
 				const addresses = await $http.request({
-					url: '/user/addresses'
+					url: '/user/addresses',
+					token:"token"
 				})
 				addresses.forEach((item)=>{
 					this.addressList.push(item)
@@ -46,8 +47,30 @@
 				}
 			},
 			addAddress(type, item) {
-				uni.navigateTo({
-					url: `/pages/address/addressManage?type=${type}&data=${JSON.stringify(item)}`
+				uni.authorize({
+					scope:"scope.address",
+					success() {
+						uni.chooseAddress({
+						  success(res) {
+							  console.log(res)
+						    console.log(res.userName)
+						    console.log(res.postalCode)
+						    console.log(res.provinceName)
+						    console.log(res.cityName)
+						    console.log(res.countyName)
+						    console.log(res.detailInfo)
+						    console.log(res.nationalCode)
+						    console.log(res.telNumber)
+						  },
+						  fail(err) {
+						  	console.log("get err")
+							console.log(err)
+						  }
+						})
+					},
+					fail(err) {
+						console.log(err)
+					}
 				})
 			},
 			//添加或修改成功之后回调

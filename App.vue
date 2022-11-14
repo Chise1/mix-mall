@@ -7,20 +7,18 @@
 	} from 'vuex';
 	export default {
 		methods: {
-			...mapMutations(['login'])
+			...mapMutations(['login','saveUserInfo'])
 		},
 		onLaunch: function() {
-			let userInfo = uni.getStorageSync('userInfo') || '';
-			if(userInfo.id){
+			let token = uni.getStorageSync('token') || '';
+			if(token){
 				//更新登陆状态
-				uni.getStorage({
-					key: 'userInfo',
-					success: (res) => {
-						this.login(res.data);
-					}
-				});
+				this.login(token)
 			}
-
+			let userInfo = uni.getStorageSync("userInfo")
+			if (userInfo){
+				this.saveUserInfo(userInfo)
+			}
 		},
 		onShow: function() {
 			console.log('App Show')

@@ -222,8 +222,10 @@
 							return
 						}
 					})
+					return res[0]
+				}else{
+					return {}
 				}
-				return res[0]
 			}
 		},
 		methods: {
@@ -266,7 +268,15 @@
 			},
 			//收藏
 			toFavorite() {
-				this.favorite = !this.favorite;
+				$http.request({
+					method :"POST",
+					url:`/user/favorite?goods_id=${this.detail.id}&favorite=${!this.detail.favorite}`,
+					token:"token"
+				}).then(value=>{
+					console.log(value)
+					this.detail.favorite =value.favorite
+				})
+				this.detail.favorite = !this.detail.favorite;
 			},
 			buy() {
 				uni.navigateTo({

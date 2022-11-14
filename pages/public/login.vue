@@ -35,7 +35,6 @@
 
 <script>
 	import $http from '@/common/api/request.js';
-
 	import {
 		mapMutations
 	} from 'vuex';
@@ -52,7 +51,7 @@
 
 		},
 		methods: {
-			...mapMutations(['login', 'userInfo']),
+			...mapMutations(['login', 'saveUserInfo']),
 			inputChange(e) {
 				const key = e.currentTarget.dataset.key;
 				this[key] = e.detail.value;
@@ -71,14 +70,13 @@
 				} = this;
 				/* 数据验证模块
 				if(!this.$api.match({
-				  mobile,
-				  password
+					mobile,
+					password
 				})){
-				  this.logining = false;
-				  return;
+					this.logining = false;
+					return;
 				}
 				*/
-
 				const sendData = {
 					mobile,
 					password
@@ -95,14 +93,12 @@
 					this.login(result.token);
 					const info = await $http.request({
 						url: "/user/userInfo",
-						header:{
-							token:"token"
-						}
+							token: "token"
 					})
-					this.userInfo(info);
+					this.saveUserInfo(info);
 					uni.navigateBack();
 				} catch (err) {
-					this.$api.msg(err.msg);
+					this.$api.msg(err.data.msg);
 					this.logining = false;
 				}
 			}
@@ -128,21 +124,21 @@
 		position: relative;
 		z-index: 90;
 		background: #fff;
-		padding-bottom: 40 upx;
+		padding-bottom: 40upx;
 	}
 
 	.back-btn {
 		position: absolute;
-		left: 40 upx;
+		left: 40upx;
 		z-index: 9999;
 		padding-top: var(--status-bar-height);
-		top: 40 upx;
-		font-size: 40 upx;
+		top: 40upx;
+		font-size: 40upx;
 		color: $font-color-dark;
 	}
 
 	.left-top-sign {
-		font-size: 120 upx;
+		font-size: 120upx;
 		color: $page-color-base;
 		position: relative;
 		left: -16upx;
@@ -150,7 +146,7 @@
 
 	.right-top-sign {
 		position: absolute;
-		top: 80 upx;
+		top: 80upx;
 		right: -30upx;
 		z-index: 95;
 
@@ -158,8 +154,8 @@
 		&:after {
 			display: block;
 			content: "";
-			width: 400 upx;
-			height: 80 upx;
+			width: 400upx;
+			height: 80upx;
 			background: #b4f3e2;
 		}
 
@@ -182,22 +178,22 @@
 		position: absolute;
 		left: -270upx;
 		bottom: -320upx;
-		border: 100 upx solid #d0d1fd;
+		border: 100upx solid #d0d1fd;
 		border-radius: 50%;
-		padding: 180 upx;
+		padding: 180upx;
 	}
 
 	.welcome {
 		position: relative;
-		left: 50 upx;
+		left: 50upx;
 		top: -90upx;
-		font-size: 46 upx;
+		font-size: 46upx;
 		color: #555;
 		text-shadow: 1px 0px 1px rgba(0, 0, 0, .3);
 	}
 
 	.input-content {
-		padding: 0 60 upx;
+		padding: 0 60upx;
 	}
 
 	.input-item {
@@ -205,25 +201,25 @@
 		flex-direction: column;
 		align-items: flex-start;
 		justify-content: center;
-		padding: 0 30 upx;
+		padding: 0 30upx;
 		background: $page-color-light;
-		height: 120 upx;
+		height: 120upx;
 		border-radius: 4px;
-		margin-bottom: 50 upx;
+		margin-bottom: 50upx;
 
 		&:last-child {
 			margin-bottom: 0;
 		}
 
 		.tit {
-			height: 50 upx;
-			line-height: 56 upx;
+			height: 50upx;
+			line-height: 56upx;
 			font-size: $font-sm+2upx;
 			color: $font-color-base;
 		}
 
 		input {
-			height: 60 upx;
+			height: 60upx;
 			font-size: $font-base + 2upx;
 			color: $font-color-dark;
 			width: 100%;
@@ -231,11 +227,11 @@
 	}
 
 	.confirm-btn {
-		width: 630 upx;
-		height: 76 upx;
-		line-height: 76 upx;
+		width: 630upx;
+		height: 76upx;
+		line-height: 76upx;
 		border-radius: 50px;
-		margin-top: 70 upx;
+		margin-top: 70upx;
 		background: $uni-color-primary;
 		color: #fff;
 		font-size: $font-lg;
@@ -249,13 +245,13 @@
 		font-size: $font-sm+2upx;
 		color: $font-color-spec;
 		text-align: center;
-		margin-top: 40 upx;
+		margin-top: 40upx;
 	}
 
 	.register-section {
 		position: absolute;
 		left: 0;
-		bottom: 50 upx;
+		bottom: 50upx;
 		width: 100%;
 		font-size: $font-sm+2upx;
 		color: $font-color-base;
@@ -263,7 +259,7 @@
 
 		text {
 			color: $font-color-spec;
-			margin-left: 10 upx;
+			margin-left: 10upx;
 		}
 	}
 </style>

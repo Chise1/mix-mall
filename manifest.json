@@ -14,7 +14,9 @@
             "autoclose" : true,
             "delay" : 0
         },
-        "modules" : {},
+        "modules" : {
+            "OAuth" : {}
+        },
         /* 模块配置 */
         "distribute" : {
             /* 应用发布信息 */
@@ -47,7 +49,14 @@
             },
             "ios" : {},
             /* ios打包配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "oauth" : {
+                    "weixin" : {
+                        "appid" : "wx833cac1c9bdff8b1",
+                        "UniversalLinks" : ""
+                    }
+                }
+            }
         }
     },
     /* SDK配置 */
@@ -56,10 +65,19 @@
     "mp-weixin" : {
         /* 小程序特有相关 */
         "usingComponents" : true,
-        "appid" : "",
+        "appid" : "wx833cac1c9bdff8b1",
         "setting" : {
-            "urlCheck" : true
-        }
+            "urlCheck" : false,
+            "minified" : false
+        },
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "需要用户地址进行快递发送"
+            }
+        },
+        "requiredPrivateInfos": [
+            "chooseAddress"
+        ]
     },
     "vueVersion" : "2"
 }

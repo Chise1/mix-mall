@@ -11,14 +11,25 @@
 				placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
-			<text class="tit">地址</text>
-			<input class="input" type="text" v-model="addressData.address" placeholder="地址"
+			<text class="tit">省</text>
+			<input class="input" type="text" v-model="addressData.address" placeholder="省"
 				placeholder-class="placeholder" />
-
-			<!-- 	<text @click="chooseLocation" class="input">
-				{{addressData.addressName}}
-			</text>
-			<text class="yticon icon-shouhuodizhi"></text> -->
+		</view>
+		<view class="row b-b">
+			<text class="tit">市</text>
+			<input class="input" type="text" v-model="addressData.address" placeholder="市"
+				placeholder-class="placeholder" />
+		
+		</view>
+		<view class="row b-b">
+			<text class="tit">区</text>
+			<input class="input" type="text" v-model="addressData.address" placeholder="区"
+				placeholder-class="placeholder" />
+		</view>
+		<view class="row b-b">
+			<text class="tit">详细地址</text>
+			<input class="input" type="text" v-model="addressData.address" placeholder="详细地址"
+				placeholder-class="placeholder" />
 		</view>
 		<!-- 		<view class="row b-b"> 
 			<text class="tit">门牌号</text>

@@ -235,7 +235,7 @@
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合
 			 */
-			async loadData() {
+			loadData() {
 				$http.request({
 					url: '/product/banner',
 				}).then(carouselList => {
@@ -245,6 +245,8 @@
 						item.imgUrl = $http.media(item.imgUrl)
 						this.carouselList.push(item)
 					});
+				}).catch(ret=>{
+					console.log(ret)
 				})
 				$http.request({
 					url: "/product/goods",
@@ -253,6 +255,8 @@
 						item.image=$http.media(item.image)
 					})
 					this.goodsList = goodsList || [];
+				}).catch(ret=>{
+					console.log(ret)
 				})
 				$http.request({
 					url: '/product/icons'
@@ -261,6 +265,8 @@
 						item.image = $http.media(item.image);
 						this.icons.push(item);
 					});
+				}).catch(ret=>{
+					console.log(ret)
 				})
 			},
 			//轮播图切换修改背景色

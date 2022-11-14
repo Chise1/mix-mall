@@ -98,16 +98,10 @@
 			async loadData() {
 				//请求数据
 				let hasLogin = this.hasLogin
-				if (!this.hasLogin) {
-					uni.navigateTo({
-						url: "/pages/public/login"
-					})
-				} else {
+				if (hasLogin) {
 					let list = await $http.request({
 						url: "/customer/cart",
-						header: {
-							token: true
-						}
+						token: true
 					})
 					if (hasLogin) {
 						let cartList = list.map(item => {
@@ -118,7 +112,6 @@
 						this.calcTotal(); //计算总价
 					}
 				}
-
 			},
 			//监听image加载完成
 			onImageLoad(key, index) {
@@ -129,8 +122,10 @@
 				this[key][index].image = '/static/errorImage.jpg';
 			},
 			navToLogin() {
-				uni.navigateTo({
-					url: '/pages/public/login'
+				$http.login().then(()=>{
+					this.loadData()
+					console.log(this.hasLogin)
+					console.log(this.$data)
 				})
 			},
 			//选中状态处理
