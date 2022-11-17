@@ -27,14 +27,17 @@
 				addressList: []
 			}
 		},
-		onLoad(option) {},
+		onLoad(option) {
+			this.source=option.source
+		},
 		methods: {
 			async loadData() {
+				this.addressList=[];
 				const addresses = await $http.request({
 					url: '/user/addresses',
-					token:"token"
+					token: "token"
 				})
-				addresses.forEach((item)=>{
+				addresses.forEach((item) => {
 					this.addressList.push(item)
 				})
 			},
@@ -47,31 +50,34 @@
 				}
 			},
 			addAddress(type, item) {
-				uni.authorize({
-					scope:"scope.address",
-					success() {
-						uni.chooseAddress({
-						  success(res) {
-							  console.log(res)
-						    console.log(res.userName)
-						    console.log(res.postalCode)
-						    console.log(res.provinceName)
-						    console.log(res.cityName)
-						    console.log(res.countyName)
-						    console.log(res.detailInfo)
-						    console.log(res.nationalCode)
-						    console.log(res.telNumber)
-						  },
-						  fail(err) {
-						  	console.log("get err")
-							console.log(err)
-						  }
-						})
-					},
-					fail(err) {
-						console.log(err)
-					}
+				uni.navigateTo({
+					url: `/pages/address/addressManage?type=${type}&data=${JSON.stringify(item)}`
 				})
+				// uni.authorize({
+				// 	scope:"scope.address",
+				// 	success() {
+				// 		uni.chooseAddress({
+				// 		  success(res) {
+				// 			  console.log(res)
+				// 		    console.log(res.userName)
+				// 		    console.log(res.postalCode)
+				// 		    console.log(res.provinceName)
+				// 		    console.log(res.cityName)
+				// 		    console.log(res.countyName)
+				// 		    console.log(res.detailInfo)
+				// 		    console.log(res.nationalCode)
+				// 		    console.log(res.telNumber)
+				// 		  },
+				// 		  fail(err) {
+				// 		  	console.log("get err")
+				// 			console.log(err)
+				// 		  }
+				// 		})
+				// 	},
+				// 	fail(err) {
+				// 		console.log(err)
+				// 	}
+				// })
 			},
 			//添加或修改成功之后回调
 			// refreshList(data, type) {

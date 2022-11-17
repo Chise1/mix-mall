@@ -41,12 +41,21 @@
 		<view class="c-list">
 			<view class="c-row b-b" @click="toggleSpec">
 				<text class="tit">购买类型</text>
-				<view class="con">
+				<view class="con" v-if="hasChoosed">
 					<text class="selected-text" v-for="(sItem, sIndex) in specSelected" :key="sIndex">
 						{{sItem.value}}
 					</text>
 				</view>
+				<view class="con" v-else>
+					<text class="selected-text">未选择</text>
+				</view>
 				<text class="yticon icon-you"></text>
+			</view>
+			<view class="c-row b-b">
+				<text class="tit">购买数量</text>
+				<view class="con">
+					<text>1</text>
+				</view>
 			</view>
 			<!-- 	<view class="c-row b-b">
 				<text class="tit">促销活动</text>
@@ -83,7 +92,7 @@
 						<text class="name">{{detail.remark.name}}</text>
 						<text class="con">{{detail.remark.remark}}</text>
 						<view class="bot">
-							<text class="attr">购买类型：{{detail.remark.attr}}</text>
+							<text class="attr">购买类型：{{detail.remark.attrs}}</text>
 							<text class="time">{{detail.remark.add_time}}</text>
 						</view>
 					</view>
@@ -115,7 +124,7 @@
 
 			<view class="action-btn-group">
 				<button type="primary" class=" action-btn no-border buy-now-btn" @click="buy">立即购买</button>
-				<button type="primary" class=" action-btn no-border add-cart-btn">加入购物车</button>
+				<button type="primary" class=" action-btn no-border add-cart-btn" @click="addCart">加入购物车</button>
 			</view>
 		</view>
 
@@ -156,7 +165,13 @@
 					</view>
 				</view>
 				<view class="attr-list">
-					<button class="btn" @click="toggleSpec">完成</button>
+					<view class="selected-number">
+						<text>数量</text>
+						<uniNumberBox :value="buyNum" min="1" :max="choose.stock_num"></uniNumberBox>
+					</view>
+				</view>
+				<view class="attr-list">
+					<button class="btn" @click="finish" style="margin-inline: 0;">完成</button>
 				</view>
 			</view>
 		</view>
@@ -168,10 +183,13 @@
 <script>
 	import $http from '@/common/api/request.js';
 	import share from '@/components/share';
+	import uniNumberBox from '@/components/uni-number-box.vue'
+	import store from '@/store/index.js'
 
 	export default {
 		components: {
-			share
+			share,
+			uniNumberBox
 		},
 		data() {
 			return {
@@ -179,7 +197,9 @@
 				specSelected: [],
 				shareList: [],
 				detail: {},
-
+				buyNum: 1,
+				hasChoosed: false, //是否还没有进行过选择
+				next: "" //点击完成之后的去处
 			};
 		},
 		async onLoad(options) {
@@ -223,7 +243,7 @@
 						}
 					})
 					return res[0]
-				}else{
+				} else {
 					return {}
 				}
 			}
@@ -231,6 +251,9 @@
 		methods: {
 			//规格弹窗开关
 			toggleSpec() {
+				if (!this.hasChoosed) {
+					this.hasChoosed = true
+				}
 				if (this.specClass === 'show') {
 					this.specClass = 'hide';
 					setTimeout(() => {
@@ -238,6 +261,16 @@
 					}, 250);
 				} else if (this.specClass === 'none') {
 					this.specClass = 'show';
+				}
+			},
+			finish() { //完成
+				if (this.next == "cart") {
+					this.addCart()
+					this.toggleSpec()
+				} else if (this.next = "buy") {
+					this.buy()
+				} else {
+					this.toggleSpec()
 				}
 			},
 			//选择规格
@@ -269,22 +302,65 @@
 			//收藏
 			toFavorite() {
 				$http.request({
-					method :"POST",
-					url:`/user/favorite?goods_id=${this.detail.id}&favorite=${!this.detail.favorite}`,
-					token:"token"
-				}).then(value=>{
+					method: "POST",
+					url: `/user/favorite?goods_id=${this.detail.id}&favorite=${!this.detail.favorite}`,
+					token: "token"
+				}).then(value => {
 					console.log(value)
-					this.detail.favorite =value.favorite
+					this.detail.favorite = value.favorite
 				})
 				this.detail.favorite = !this.detail.favorite;
 			},
+			addCart() {
+				if (!this.hasChoosed) {
+					this.next = "cart"
+					this.toggleSpec()
+					return
+				}
+				$http.request({
+					method: "POST",
+					url: `/cart/cart`,
+					token: true,
+					data: {
+						goods_id: this.detail.id,
+						sku_id: this.choose.id,
+						number: 1
+					}
+
+				}).then(value => {
+					uni.showToast({
+						title: "加入购物车成功"
+					})
+				})
+			},
 			buy() {
+				if (!this.hasChoosed) {
+					this.next = "buy"
+					this.toggleSpec()
+					return
+				}
+				let goodsData = [];
+				goodsData.push({
+					goods:{
+						name: this.detail.name,
+						image: this.choose.preview,
+						attrs: this.choose.attrs,
+						price: this.choose.price,
+						line_price:this.choose.line_price,
+						goods_id: this.detail.id,
+						sku_id: this.choose.id
+					},					
+					number: this.buyNum,
+					checked: true
+				})
+				store.commit('setOrder', goodsData);
 				uni.navigateTo({
 					url: `/pages/order/createOrder`
 				})
 			},
 			stopPrevent() {}
 		},
+
 
 	}
 </script>
@@ -643,6 +719,20 @@
 			color: $font-color-base;
 			padding-top: 30upx;
 			padding-left: 10upx;
+		}
+
+		.selected-number {
+			display: flex;
+			flex-direction: initial;
+
+			text {
+				margin-block: auto;
+				margin-right: 10upx;
+			}
+
+			.uni-numbox {
+				position: relative;
+			}
 		}
 
 		.item-list {

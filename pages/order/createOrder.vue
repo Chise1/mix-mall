@@ -4,12 +4,16 @@
 		<navigator url="/pages/address/address?source=1" class="address-section">
 			<view class="order-content">
 				<text class="yticon icon-shouhuodizhi"></text>
-				<view class="cen">
+				<view class="cen" v-if="addressData">
 					<view class="top">
 						<text class="name">{{addressData.name}}</text>
 						<text class="mobile">{{addressData.mobile}}</text>
 					</view>
-					<text class="address">{{addressData.address}} {{addressData.area}}</text>
+					<text class="address">{{addressData.province}} {{addressData.city}} {{addressData.district}}
+						{{addressData.address}}</text>
+				</view>
+				<view v-else class="cen">
+					<text class="address">请选择地址</text>
 				</view>
 				<text class="yticon icon-you"></text>
 			</view>
@@ -29,8 +33,8 @@
 				<view class="g-item">
 					<image :src="item.goods.image"></image>
 					<view class="right">
-						<text class="title clamp">{{item.goods.title}}</text>
-						<text class="spec">{{item.goods.attr_val}} L</text>
+						<text class="title clamp">{{item.goods.name}}</text>
+						<text class="spec">{{item.goods.attrs}} L</text>
 						<view class="price-box">
 							<text class="price">￥{{item.goods.price}}</text>
 							<text class="number">x {{item.number}}</text>
@@ -64,12 +68,12 @@
 		<view class="yt-list">
 			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">商品金额</text>
-				<text class="cell-tip">￥179.88</text>
+				<text class="cell-tip">￥{{all_price}}</text>
 			</view>
-			<!-- 	<view class="yt-list-cell b-b">
+			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">优惠金额</text>
-				<text class="cell-tip red">-￥35</text>
-			</view> -->
+				<text class="cell-tip red">-￥{{deduce}}</text>
+			</view>
 			<view class="yt-list-cell b-b">
 				<text class="cell-tit clamp">运费</text>
 				<text class="cell-tip">免运费</text>
@@ -138,25 +142,26 @@
 					// 	price: 15,
 					// }
 				],
-				addressData: {
-					name: '许小星',
-					mobile: '13853989563',
-					addressName: '金九大道',
-					address: '山东省济南市历城区',
-					area: '149号',
-					default: false,
-				},
+				addressData: {},
 				goodsList: []
 			}
 		},
 		onLoad() {
+			//默认地址
+			$http.request({
+				url: "/user/address/default",
+				token: true
+			}).then(value => {
+				this.addressData = value
+			})
+
 			//商品数据
-			this.$store.state.order.forEach((item)=>{
+			this.$store.state.order.forEach((item) => {
 				this.goodsList.push(item)
 			})
 		},
-		computed:{
-			total:function(){
+		computed: {
+			total: function() {
 				let total = 0;
 				this.goodsList.forEach(item => {
 					if (item.checked === true) {
@@ -164,6 +169,18 @@
 					}
 				})
 				return Number(total.toFixed(2));
+			},
+			all_price: function() {
+				let total = 0;
+				this.goodsList.forEach(item => {
+					if (item.checked === true) {
+						total += item.goods.line_price * item.number;
+					}
+				})
+				return Number(total.toFixed(2));
+			},
+			deduce: function() {
+				return Number(this.all_price - this.total);
 			}
 		},
 		methods: {
@@ -183,25 +200,32 @@
 				this.payType = type;
 			},
 			submit() {
-				const data =[];
-				this.goodsList.forEach((item)=>{
+				if (!this.addressData) {
+					uni.showToast({
+						icon: "none",
+						title: "请选择地址"
+					})
+				}
+				const data = [];
+				this.goodsList.forEach((item) => {
 					data.push({
-						id:item.id,
-						goods_id:item.goods.id,
-						num:item.num
+						goods_id: item.goods.goods_id,
+						sku_id: item.goods.sku_id,
+						num: item.number,
 					})
 				})
 				$http.request({
-					url:'/customer/order',
-					method:'post',
-					data: data,
-					header:{
-						token:true,
-						ContentType: "application/json"
-					}
-				}).then(()=>{
+					url: '/user/order',
+					method: 'post',
+					data: {
+						remark: this.desc,
+						goodsList: data,
+						address: this.addressData
+					},
+					token: true
+				}).then((value) => {
 					uni.redirectTo({
-						url: '/pages/money/pay'
+						url: `/pages/money/pay?money=${value.price}&order_id=${value.order_id}`
 					})
 				})
 			},

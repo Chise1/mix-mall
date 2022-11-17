@@ -12,18 +12,18 @@
 		</view>
 		<view class="row b-b">
 			<text class="tit">省</text>
-			<input class="input" type="text" v-model="addressData.address" placeholder="省"
+			<input class="input" type="text" v-model="addressData.province" placeholder="省"
 				placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
 			<text class="tit">市</text>
-			<input class="input" type="text" v-model="addressData.address" placeholder="市"
+			<input class="input" type="text" v-model="addressData.city" placeholder="市"
 				placeholder-class="placeholder" />
-		
+
 		</view>
 		<view class="row b-b">
 			<text class="tit">区</text>
-			<input class="input" type="text" v-model="addressData.address" placeholder="区"
+			<input class="input" type="text" v-model="addressData.district" placeholder="区"
 				placeholder-class="placeholder" />
 		</view>
 		<view class="row b-b">
@@ -31,14 +31,9 @@
 			<input class="input" type="text" v-model="addressData.address" placeholder="详细地址"
 				placeholder-class="placeholder" />
 		</view>
-		<!-- 		<view class="row b-b"> 
-			<text class="tit">门牌号</text>
-			<input class="input" type="text" v-model="addressData.area" placeholder="楼号、门牌" placeholder-class="placeholder" />
-		</view> -->
-
 		<view class="row default-row">
 			<text class="tit">设为默认</text>
-			<switch :checked="addressData.defaule" color="#fa436a" @change="switchChange" />
+			<switch :checked="addressData.isDefault" color="#fa436a" @change="switchChange" />
 		</view>
 		<button class="add-btn" @click="confirm">提交</button>
 	</view>
@@ -53,10 +48,11 @@
 					id: '',
 					name: '',
 					mobile: '',
-					// addressName: '在地图选择',
+					province: '',
+					city: '',
+					district: '',
 					address: '',
-					// area: '',
-					default: false
+					isDefault: false
 				}
 			}
 		},
@@ -73,7 +69,7 @@
 		},
 		methods: {
 			switchChange(e) {
-				this.addressData.default = e.detail;
+				this.addressData.isDefault = e.detail.value;
 			},
 
 			//地图选择地址
@@ -101,28 +97,26 @@
 				// 	this.$api.msg('请在地图选择所在位置');
 				// 	return;
 				// }
-				if (!data.address) {
+				if (!data.address || !data.province || !data.city || !data.district) {
 					this.$api.msg('请填写地址信息');
 					return;
 				}
 				if (data.id === "") {
 					data.id = null
 				}
-				const ret = $http.requestSync({
+				$http.request({
 					url: '/user/address',
 					method: "post",
 					data: data,
-					header: {
-						ContentType: "application/json"
-					}
-				}); // todo 增加判断写入错误
+					token: true
+				}).then(setTimeout(() => {
+					uni.navigateBack()
+				}, 800))
 
 				//this.$api.prePage()获取上一页实例，可直接调用上页所有数据和方法，在App.vue定义
 				// this.$api.prePage().refreshList(data, this.manageType);
 				// this.$api.msg(`地址${this.manageType=='edit' ? '修改': '添加'}成功`);
-				setTimeout(() => {
-					uni.navigateBack()
-				}, 800)
+
 			},
 		}
 	}

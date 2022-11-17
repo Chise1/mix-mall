@@ -31,18 +31,27 @@ export default {
 						},
 						success: (res) => {
 							//获得token完成登录
-							store.commit('login', res.data.token)
+							const token = res.data.token;
+							store.commit('login', token)
 							if (!res.data.registered) {
 								uni.getUserInfo({
-									provider: "weixin",
 									success(value) {
 										store.commit('saveUserInfo', value.userInfo)
-										uni.request({
+										_self.request({
 											url: "/user/userInfo",
 											data: value.userInfo,
 											method: "POST",
-											token: res.token
+											token: token
 										})
+									}
+								})
+							} else {
+								_self.request({
+									url: "/user/userInfo",
+									method: "GET",
+									token: token,
+									success(result) {
+										store.commit('saveUserInfo', result.data)
 									}
 								})
 							}
@@ -88,13 +97,57 @@ export default {
 			uni.request({
 				...options,
 				success: (result) => {
+					setTimeout(function() {
+						uni.hideLoading();
+					}, 100);
+					if (result.statusCode !== 200) {
+						uni.showToast({
+							title: result.errMsg || "请求失败",
+							icon: "none"
+						})
+						rej(result);
+					} else {
+						let data = result.data;
+						res(data);
+					}
+				},
+				fail: (err) => {
+					uni.hideLoading()
+					uni.showToast({
+						title: err.errMsg,
+						icon: "none"
+					})
+					rej(err)
+				}
+			})
+		})
+	},
+	requestNoShowloading(options = {}) {
+		options.url = this.common.baseUrl + options.url;
+		options.data = options.data || this.common.data;
+		options.header = options.header || {
+			"Content-Type": "application/json"
+		};
+		options.method = options.method || this.common.method;
+		options.dataType = options.dataType || this.common.dataType;
+
+		//判断是否传入了header头的token进行用户是否登录的验证
+		const token = store.state.token;
+		if (options.token && !token) {
+			uni.showToast({
+				title: "请先登录",
+				icon: "none"
+			})
+			return this.login()
+		}
+		options.header.token = token;
+		return new Promise((res, rej) => {
+			uni.request({
+				...options,
+				success: (result) => {
 					if (result.statusCode != 200) {
 						return rej(result);
 					}
-					setTimeout(function() {
-						uni.hideLoading();
-					}, 500);
-					console.log(result)
 					let data = result.data;
 					res(data);
 				}

@@ -70,11 +70,6 @@
             "urlCheck" : false,
             "minified" : false
         },
-        "permission" : {
-            "scope.userLocation" : {
-                "desc" : "需要用户地址进行快递发送"
-            }
-        },
         "requiredPrivateInfos": [
             "chooseAddress"
         ]

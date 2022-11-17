@@ -5,7 +5,7 @@
 			<image class="bg" src="/static/user-bg.jpg"></image>
 			<view class="user-info-box">
 				<view class="portrait-box">
-					<image class="portrait" :src="userInfo.imgUrl || '/static/missing-face.png'"></image>
+					<image class="portrait" :src="userInfo.avatarUrl || '/static/missing-face.png'"></image>
 				</view>
 				<view class="info-box">
 					<text class="username">{{userInfo.nickName || '游客'}}</text>
@@ -115,11 +115,7 @@
 			}
 		},
 		onLoad() {
-			console.log("99999999999")
-			console.log(this.userInfo)
-			console.log(this.hasLogin)
 			if (!this.userInfo && this.hasLogin) {
-				console.log("0000000000000")
 				this.loadUserInfo()
 			}
 		},
@@ -203,10 +199,8 @@
 			loadUserInfo() {
 				$http.request({
 					url: "/user/userInfo",
-					token: "token",
+					token: true,
 				}).then(result => {
-					console.log("userinfo")
-					console.log(result)
 					this.saveUserInfo(result)
 				})
 			}
@@ -215,6 +209,7 @@
 			$http.request({
 				url: "/user/view_history",
 			}).then(value => {
+				console.log(this.userInfo)
 				this.history = [];
 				if (value){
 					value.forEach(item => {

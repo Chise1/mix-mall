@@ -28,10 +28,8 @@
 							<text class="clamp title">{{item.goods.title}}</text>
 							<text class="attr">{{item.goods.attr_val}}</text>
 							<text class="price">¥{{item.goods.price}}</text>
-							<uni-number-box class="step" :min="1" :max="item.stock"
-								:value="item.number>item.stock?item.stock:item.number"
-								:isMax="item.number>=item.stock?true:false" :isMin="item.number===1" :index="index"
-								@eventChange="numberChange"></uni-number-box>
+							<uni-number-box class="step" :min="1" :value="item.number" :isMin="item.number===1"
+								:index="index" @eventChange="numberChange"></uni-number-box>
 						</view>
 						<text class="del-btn yticon icon-fork" @click="deleteCartItem(index)"></text>
 					</view>
@@ -100,17 +98,16 @@
 				let hasLogin = this.hasLogin
 				if (hasLogin) {
 					let list = await $http.request({
-						url: "/customer/cart",
+						url: "/cart/cart",
 						token: true
 					})
-					if (hasLogin) {
-						let cartList = list.map(item => {
-							item.checked = true;
-							return item;
-						});
-						this.cartList = cartList;
-						this.calcTotal(); //计算总价
-					}
+					let cartList = list.map(item => {
+						item.checked = true;
+						item.goods.image = $http.media(item.goods.image)
+						return item;
+					});
+					this.cartList = cartList;
+					this.calcTotal(); //计算总价
 				}
 			},
 			//监听image加载完成
@@ -122,10 +119,8 @@
 				this[key][index].image = '/static/errorImage.jpg';
 			},
 			navToLogin() {
-				$http.login().then(()=>{
+				$http.login().then(() => {
 					this.loadData()
-					console.log(this.hasLogin)
-					console.log(this.$data)
 				})
 			},
 			//选中状态处理
@@ -146,16 +141,25 @@
 			numberChange(data) {
 				this.cartList[data.index].number = data.number;
 				this.calcTotal();
+				console.log(data)
+				$http.requestNoShowloading({
+					url: `/cart/number?cart_id=${this.cartList[data.index].id}&number=${data.number}`,
+					method: "POST",
+				})
 			},
 			//删除
 			deleteCartItem(index) {
 				let list = this.cartList;
 				let row = list[index];
 				let id = row.id;
-
-				this.cartList.splice(index, 1);
-				this.calcTotal();
-				uni.hideLoading();
+				$http.request({
+					url: "/cart/remove?cart_id=" + id,
+					method: "DELETE",
+				}).then(result => {
+					this.cartList.splice(index, 1);
+					this.calcTotal();
+					uni.hideLoading();
+				})
 			},
 			//清空
 			clearCart() {
@@ -164,8 +168,8 @@
 					success: (e) => {
 						if (e.confirm) {
 							$http.request({
-								url: "/customer/cart/clear",
-								method: "delete"
+								url: "/cart/clear",
+								method: "DELETE"
 							}).then(() => {
 								this.cartList = []
 							})
