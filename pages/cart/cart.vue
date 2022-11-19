@@ -97,6 +97,7 @@
 						url: "/cart/goods",
 						token: true
 					}).then(cartList=>{
+						console.log(cartList)
 						cartList.forEach(item=>{
 							for(let i=0;i<this.cartList.length;i++){
 								let oldItem=this.cartList[i]

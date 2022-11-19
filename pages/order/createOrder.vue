@@ -209,9 +209,10 @@
 				const data = [];
 				this.goodsList.forEach((item) => {
 					data.push({
-						goods_id: item.goods.goods_id,
+						goods_id: item.goods.id,
 						sku_id: item.goods.sku_id,
 						num: item.number,
+						cart_id: item.id
 					})
 				})
 				$http.request({

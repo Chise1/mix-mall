@@ -306,7 +306,6 @@
 					url: `/user/favorite?goods_id=${this.detail.id}&favorite=${!this.detail.favorite}`,
 					token: "token"
 				}).then(value => {
-					console.log(value)
 					this.detail.favorite = value.favorite
 				})
 				this.detail.favorite = !this.detail.favorite;

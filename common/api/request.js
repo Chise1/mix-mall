@@ -107,19 +107,28 @@ export default {
 						}, 100);
 					}
 					if (!(result.statusCode >= 200 && result.statusCode<300)) {
-						uni.showToast({
-							title: result.errMsg || "请求失败",
-							icon: "none"
-						})
+						if (result.statusCode>500){
+							uni.showToast({
+								title: "服务器出错",
+								icon: "none"
+							})
+						}else if(result.statusCode>=400){
+							uni.showToast({
+								title: result.data.detail || "请求失败",
+								icon: "none"
+							})
+						}
 						rej(result);
 					} else {
 						res( result.data);
 					}
 				},
 				fail: (err) => {
+					console.log("-----------")
 					if (showloading){
 						uni.hideLoading()
 					}
+					console.log(err)
 					uni.showToast({
 						title: err.errMsg,
 						icon: "none"
