@@ -54,7 +54,7 @@
 			<view class="c-row b-b">
 				<text class="tit">购买数量</text>
 				<view class="con">
-					<text>1</text>
+					<text>{{buyNum}}</text>
 				</view>
 			</view>
 			<!-- 	<view class="c-row b-b">
@@ -167,7 +167,7 @@
 				<view class="attr-list">
 					<view class="selected-number">
 						<text>数量</text>
-						<uniNumberBox :value="buyNum" min="1" :max="choose.stock_num"></uniNumberBox>
+						<uni-number-box v-model="buyNum" :min=1 :max="choose.stock_num"></uni-number-box>
 					</view>
 				</view>
 				<view class="attr-list">
@@ -203,7 +203,7 @@
 			};
 		},
 		async onLoad(options) {
-			//接收传值,id里面放的是标题，因为测试数据并没写id 
+			//接收传值,id里面放的是标题，因为测试数据并没写id
 			let id = options.id;
 			let data = await $http.request({
 				url: "/goods/detail/" + id,
@@ -264,10 +264,10 @@
 				}
 			},
 			finish() { //完成
-				if (this.next == "cart") {
+				if (this.next === "cart") {
 					this.addCart()
 					this.toggleSpec()
-				} else if (this.next = "buy") {
+				} else if (this.next === "buy") {
 					this.buy()
 				} else {
 					this.toggleSpec()
@@ -319,12 +319,12 @@
 				}
 				$http.request({
 					method: "POST",
-					url: `/cart/cart`,
+					url: `/cart/goods`,
 					token: true,
 					data: {
 						goods_id: this.detail.id,
 						sku_id: this.choose.id,
-						number: 1
+						number: this.buyNum
 					}
 
 				}).then(value => {
@@ -334,34 +334,35 @@
 				})
 			},
 			buy() {
-				if (!this.hasChoosed) {
-					this.next = "buy"
-					this.toggleSpec()
-					return
-				}
-				let goodsData = [];
-				goodsData.push({
-					goods:{
-						name: this.detail.name,
-						image: this.choose.preview,
-						attrs: this.choose.attrs,
-						price: this.choose.price,
-						line_price:this.choose.line_price,
-						goods_id: this.detail.id,
-						sku_id: this.choose.id
-					},					
-					number: this.buyNum,
-					checked: true
-				})
-				store.commit('setOrder', goodsData);
-				uni.navigateTo({
-					url: `/pages/order/createOrder`
+				// 先判断登录没
+				$http.login().then(() => {
+					if (!this.hasChoosed) {
+						this.next = "buy"
+						this.toggleSpec()
+						return
+					}
+					let goodsData = [];
+					goodsData.push({
+						goods: {
+							name: this.detail.name,
+							image: this.choose.preview,
+							attrs: this.choose.attrs,
+							price: this.choose.price,
+							line_price: this.choose.line_price,
+							goods_id: this.detail.id,
+							sku_id: this.choose.id
+						},
+						number: this.buyNum,
+						checked: true
+					})
+					store.commit('setOrder', goodsData);
+					uni.navigateTo({
+						url: `/pages/order/createOrder`
+					})
 				})
 			},
 			stopPrevent() {}
 		},
-
-
 	}
 </script>
 

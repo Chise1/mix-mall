@@ -12,7 +12,7 @@
 				</view>
 			</view>
 			<view class="vip-card-box">
-				<image class="card-bg" src="/static/vip-card-bg.png" mode=""></image>
+				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image>
 				<view class="b-btn">
 					立即开通
 				</view>
@@ -21,7 +21,7 @@
 					DCloud会员
 				</view>
 				<text class="e-m">DCloud Union</text>
-				<text class="e-b">开通会员开发无bug 一测就上线</text>
+				<text class="e-b">开通会员开发无bug 一测就上线</text> -->
 			</view>
 		</view>
 
@@ -151,7 +151,7 @@
 			navTo(url) {
 				if (!this.hasLogin) {
 					$http.login()
-				}else{
+				} else {
 					uni.navigateTo({
 						url
 					})
@@ -211,7 +211,7 @@
 			}).then(value => {
 				console.log(this.userInfo)
 				this.history = [];
-				if (value){
+				if (value) {
 					value.forEach(item => {
 						item.image = $http.media(item.image)
 						this.history.push(item)

@@ -44,14 +44,13 @@
 				let list = await $http.request({
 					url: "/product/cates"
 				})
-				// let list = await this.$api.json('cateList');
 				list.forEach(item => {
 					if (item.image) {
 						item.image = $http.media(item.image);
 					}
 					if (!item.parent_id) {
 						this.flist.push(item); //pid为父级id, 没有pid或者pid=0是一级分类
-					} else if (item.category_type == 2) {
+					} else if (item.category_type === 2) {
 						this.slist.push(item); //没有图的是2级分类
 					} else {
 						this.tlist.push(item); //3级分类

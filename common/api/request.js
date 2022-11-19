@@ -16,6 +16,10 @@ export default {
 	login() {
 		return new Promise((nextFunc, failFunc) => {
 			let _self = this;
+			const token = store.state.token;
+			if(token) {
+				return nextFunc()
+			}
 			uni.login({
 				provider: "weixin",
 				onlyAuthorize: true, // 微信登录仅请求授权认证
@@ -70,11 +74,12 @@ export default {
 			})
 		})
 	},
-	request(options = {}) {
-		uni.showLoading({
-			title: '加载中'
-		});
-
+	request(options = {},showloading = true) {
+		if (showloading){
+			uni.showLoading({
+				title: '加载中'
+			});
+		}
 		options.url = this.common.baseUrl + options.url;
 		options.data = options.data || this.common.data;
 		options.header = options.header || {
@@ -82,7 +87,6 @@ export default {
 		};
 		options.method = options.method || this.common.method;
 		options.dataType = options.dataType || this.common.dataType;
-
 		//判断是否传入了header头的token进行用户是否登录的验证
 		const token = store.state.token;
 		if (options.token && !token) {
@@ -97,22 +101,25 @@ export default {
 			uni.request({
 				...options,
 				success: (result) => {
-					setTimeout(function() {
-						uni.hideLoading();
-					}, 100);
-					if (result.statusCode !== 200) {
+					if (showloading){
+						setTimeout(function() {
+							uni.hideLoading();
+						}, 100);
+					}
+					if (!(result.statusCode >= 200 && result.statusCode<300)) {
 						uni.showToast({
 							title: result.errMsg || "请求失败",
 							icon: "none"
 						})
 						rej(result);
 					} else {
-						let data = result.data;
-						res(data);
+						res( result.data);
 					}
 				},
 				fail: (err) => {
-					uni.hideLoading()
+					if (showloading){
+						uni.hideLoading()
+					}
 					uni.showToast({
 						title: err.errMsg,
 						icon: "none"
@@ -120,67 +127,6 @@ export default {
 					rej(err)
 				}
 			})
-		})
-	},
-	requestNoShowloading(options = {}) {
-		options.url = this.common.baseUrl + options.url;
-		options.data = options.data || this.common.data;
-		options.header = options.header || {
-			"Content-Type": "application/json"
-		};
-		options.method = options.method || this.common.method;
-		options.dataType = options.dataType || this.common.dataType;
-
-		//判断是否传入了header头的token进行用户是否登录的验证
-		const token = store.state.token;
-		if (options.token && !token) {
-			uni.showToast({
-				title: "请先登录",
-				icon: "none"
-			})
-			return this.login()
-		}
-		options.header.token = token;
-		return new Promise((res, rej) => {
-			uni.request({
-				...options,
-				success: (result) => {
-					if (result.statusCode != 200) {
-						return rej(result);
-					}
-					let data = result.data;
-					res(data);
-				}
-			})
-		})
-	},
-	requestSync(options = {}) {
-
-		uni.showLoading({
-			title: '加载中'
-		});
-
-		options.url = this.common.baseUrl + options.url;
-		options.data = options.data || this.common.data;
-		options.header = options.header || {
-			"Content-Type": "application/json"
-		};
-		options.method = options.method || this.common.method;
-		options.dataType = options.dataType || this.common.dataType;
-
-		//判断是否传入了header头的token进行用户是否登录的验证
-		const token = store.state.token;
-		if (options.token && !token) {
-			uni.showToast({
-				title: "请先登录",
-				icon: "none"
-			})
-			this.login()
-			return
-		}
-		options.header.token = token;
-		return uni.request({
-			...options
 		})
 	}
 }

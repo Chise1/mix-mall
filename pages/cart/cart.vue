@@ -1,3 +1,4 @@
+<script src="../../../mix-mall2/Json.js"></script>
 <template>
 	<view class="container">
 		<!-- 空白页 -->
@@ -19,16 +20,15 @@
 				<block v-for="(item, index) in cartList" :key="item.id">
 					<view class="cart-item" :class="{'b-b': index!==cartList.length-1}">
 						<view class="image-wrapper">
-							<image :src="item.goods.image" :class="[item.loaded]" mode="aspectFill" lazy-load
-								@load="onImageLoad('cartList', index)" @error="onImageError('cartList', index)"></image>
+							<image :src="item.goods.image" style="opacity:1"></image>
 							<view class="yticon icon-xuanzhong2 checkbox" :class="{checked: item.checked}"
 								@click="check('item', index)"></view>
 						</view>
 						<view class="item-right">
-							<text class="clamp title">{{item.goods.title}}</text>
-							<text class="attr">{{item.goods.attr_val}}</text>
+							<text class="clamp title">{{item.goods.name}}</text>
+							<text class="attr">{{item.goods.attrs}}</text>
 							<text class="price">¥{{item.goods.price}}</text>
-							<uni-number-box class="step" :min="1" :value="item.number" :isMin="item.number===1"
+							<uni-number-box class="step" :min=1 :value="item.number" :isMin="item.number===1"
 								:index="index" @eventChange="numberChange"></uni-number-box>
 						</view>
 						<text class="del-btn yticon icon-fork" @click="deleteCartItem(index)"></text>
@@ -74,23 +74,19 @@
 			return {
 				total: 0, //总价格
 				allChecked: false, //全选状态  true|false
-				empty: false, //空白页现实  true|false
 				cartList: [],
 				loaded: false
 			};
 		},
 		onLoad() {},
-		watch: {
-			//显示空白页
-			cartList(e) {
-				let empty = e.length === 0 ? true : false;
-				if (this.empty !== empty) {
-					this.empty = empty;
-				}
-			}
-		},
 		computed: {
-			...mapState(['hasLogin'])
+			...mapState(['hasLogin']),
+			empty(){
+				if (this.cartList.length>0){
+					return false
+				}
+				return true
+			}
 		},
 		methods: {
 			async loadData() {
@@ -98,26 +94,40 @@
 				let hasLogin = this.hasLogin
 				if (hasLogin) {
 					let list = await $http.request({
-						url: "/cart/cart",
+						url: "/cart/goods",
 						token: true
+					}).then(cartList=>{
+						cartList.forEach(item=>{
+							for(let i=0;i<this.cartList.length;i++){
+								let oldItem=this.cartList[i]
+								if (oldItem.id===item.id){
+									this.cartList[i].number=item.number
+									return
+								}
+							}
+							item.checked = true;
+							item.goods.image = $http.media(item.goods.image)
+							this.cartList.push(item)
+						})
+						let waitDel = []
+						this.cartList.forEach((oldItem,index)=>{
+							for(let i=0;i<cartList.length;i++){
+								let item=cartList[i]
+								if (oldItem.id===item.id){
+									return
+								}
+							}
+							waitDel.push(index)
+						})
+						waitDel.reverse()
+						waitDel.forEach(index=>{
+							this.cartList.splice(index,1)
+						})
+						this.calcTotal(); //计算总价
 					})
-					let cartList = list.map(item => {
-						item.checked = true;
-						item.goods.image = $http.media(item.goods.image)
-						return item;
-					});
-					this.cartList = cartList;
-					this.calcTotal(); //计算总价
 				}
 			},
-			//监听image加载完成
-			onImageLoad(key, index) {
-				this.$set(this[key][index], 'loaded', 'loaded');
-			},
-			//监听image加载失败
-			onImageError(key, index) {
-				this[key][index].image = '/static/errorImage.jpg';
-			},
+	
 			navToLogin() {
 				$http.login().then(() => {
 					this.loadData()
@@ -139,13 +149,13 @@
 			},
 			//数量
 			numberChange(data) {
+				console.log("numberCahange")
 				this.cartList[data.index].number = data.number;
 				this.calcTotal();
-				console.log(data)
-				$http.requestNoShowloading({
+				$http.request({
 					url: `/cart/number?cart_id=${this.cartList[data.index].id}&number=${data.number}`,
 					method: "POST",
-				})
+				},false)
 			},
 			//删除
 			deleteCartItem(index) {
@@ -153,7 +163,7 @@
 				let row = list[index];
 				let id = row.id;
 				$http.request({
-					url: "/cart/remove?cart_id=" + id,
+					url: "/cart/goods/remove?cart_id=" + id,
 					method: "DELETE",
 				}).then(result => {
 					this.cartList.splice(index, 1);
@@ -168,7 +178,7 @@
 					success: (e) => {
 						if (e.confirm) {
 							$http.request({
-								url: "/cart/clear",
+								url: "/cart/goods/clear",
 								method: "DELETE"
 							}).then(() => {
 								this.cartList = []
@@ -180,10 +190,6 @@
 			//计算总价
 			calcTotal() {
 				let list = this.cartList;
-				if (list.length === 0) {
-					this.empty = true;
-					return;
-				}
 				let total = 0;
 				let checked = true;
 				list.forEach(item => {
@@ -212,7 +218,7 @@
 			}
 		},
 		onShow() {
-			this.loadData(); // todo 需要增加更新购物车里面数量的问题
+			this.loadData()
 		}
 	}
 </script>
