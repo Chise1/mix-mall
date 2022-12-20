@@ -224,7 +224,6 @@
 					break; //forEach不能使用break
 				}
 			})
-			// this.shareList = await this.$api.json('shareList');
 		},
 		computed: {
 			choose() {
@@ -239,7 +238,6 @@
 					this.detail.skuList.forEach(item => {
 						if (item.sku_id === key_id) {
 							res.push(item)
-							return
 						}
 					})
 					return res[0]
@@ -348,7 +346,7 @@
 							attrs: this.choose.attrs,
 							price: this.choose.price,
 							line_price: this.choose.line_price,
-							goods_id: this.detail.id,
+							id: this.detail.id,
 							sku_id: this.choose.id
 						},
 						number: this.buyNum,

@@ -6,11 +6,16 @@ Vue.use(Vuex)
 const store = new Vuex.Store({
 	state: {
 		hasLogin: false,
+		hasRegistered:false,
 		userInfo: {},
 		token: "",
 		order: {}
 	},
 	mutations: {
+		registered(state,data){
+			state.hasRegistered=data;
+			console.log("registered")
+		},
 		login(state, data) {
 			state.hasLogin = true;
 			state.token = data;

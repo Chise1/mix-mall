@@ -13,13 +13,21 @@ export default {
 	media(s) {
 		return this.common.mediaUrl + s
 	},
-	login() {
-		return new Promise((nextFunc, failFunc) => {
-			let _self = this;
-			const token = store.state.token;
-			if(token) {
-				return nextFunc()
-			}
+	async login() {
+		let _self = this;
+		let token = uni.getStorageSync('token') || '';
+		if (token) {
+			store.commit('login', token)
+			this.request({
+				url: "/user/userInfo",
+				method: "GET",
+				token: token,
+				
+			}).then(result=>{
+				store.commit('saveUserInfo', result)
+				store.commit('registered', true)
+			})
+		} else {
 			uni.login({
 				provider: "weixin",
 				onlyAuthorize: true, // 微信登录仅请求授权认证
@@ -34,48 +42,37 @@ export default {
 							code: event.code
 						},
 						success: (res) => {
+							console.log(res)
+							if (res.statusCode !== 200) {
+								uni.showToast({
+									title: "登录失败",
+									icon: "none"
+								})
+								return
+							}
 							//获得token完成登录
 							const token = res.data.token;
 							store.commit('login', token)
-							if (!res.data.registered) {
-								uni.getUserInfo({
-									success(value) {
-										store.commit('saveUserInfo', value.userInfo)
-										_self.request({
-											url: "/user/userInfo",
-											data: value.userInfo,
-											method: "POST",
-											token: token
-										})
-									}
-								})
-							} else {
-								_self.request({
-									url: "/user/userInfo",
-									method: "GET",
-									token: token,
-									success(result) {
-										store.commit('saveUserInfo', result.data)
-									}
-								})
+							if (res.data.registered) {
+								store.commit('registered', true)
+								store.commit('saveUserInfo', result.data.customer)
 							}
-							nextFunc()
+						},
+						fail: function(err) {
+							// 登录授权失败
+							uni.showToast({
+								title: "登录失败",
+								icon: "none"
+							})
 						}
 					});
-				},
-				fail: function(err) {
-					// 登录授权失败
-					uni.showToast({
-						title: "登录失败",
-						icon: "none"
-					})
-					// err.code是错误码
+
 				}
-			})
-		})
+			});
+		}
 	},
-	request(options = {},showloading = true) {
-		if (showloading){
+	request(options = {}, showloading = true) {
+		if (showloading) {
 			uni.showLoading({
 				title: '加载中'
 			});
@@ -101,18 +98,18 @@ export default {
 			uni.request({
 				...options,
 				success: (result) => {
-					if (showloading){
+					if (showloading) {
 						setTimeout(function() {
 							uni.hideLoading();
 						}, 100);
 					}
-					if (!(result.statusCode >= 200 && result.statusCode<300)) {
-						if (result.statusCode>500){
+					if (!(result.statusCode >= 200 && result.statusCode < 300)) {
+						if (result.statusCode > 500) {
 							uni.showToast({
 								title: "服务器出错",
 								icon: "none"
 							})
-						}else if(result.statusCode>=400){
+						} else if (result.statusCode >= 400) {
 							uni.showToast({
 								title: result.data.detail || "请求失败",
 								icon: "none"
@@ -120,12 +117,12 @@ export default {
 						}
 						rej(result);
 					} else {
-						res( result.data);
+						res(result.data);
 					}
 				},
 				fail: (err) => {
 					console.log("-----------")
-					if (showloading){
+					if (showloading) {
 						uni.hideLoading()
 					}
 					console.log(err)

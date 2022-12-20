@@ -206,9 +206,9 @@
 						title: "请选择地址"
 					})
 				}
-				const data = [];
+				let goodsInfo = [];
 				this.goodsList.forEach((item) => {
-					data.push({
+					goodsInfo.push({
 						goods_id: item.goods.id,
 						sku_id: item.goods.sku_id,
 						num: item.number,
@@ -220,7 +220,7 @@
 					method: 'post',
 					data: {
 						remark: this.desc,
-						goodsList: data,
+						goodsList: goodsInfo,
 						address: this.addressData
 					},
 					token: true

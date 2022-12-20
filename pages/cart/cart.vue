@@ -2,11 +2,11 @@
 <template>
 	<view class="container">
 		<!-- 空白页 -->
-		<view v-if="!hasLogin || empty===true" class="empty">
+		<view v-if="!hasRegistered || empty===true" class="empty">
 			<image src="/static/emptyCart.jpg" mode="aspectFit"></image>
-			<view v-if="hasLogin" class="empty-tips">
+			<view v-if="hasRegistered" class="empty-tips">
 				空空如也
-				<navigator class="navigator" v-if="hasLogin" url="../index/index" open-type="switchTab">随便逛逛>
+				<navigator class="navigator" v-if="hasRegistered" url="../index/index" open-type="switchTab">随便逛逛>
 				</navigator>
 			</view>
 			<view v-else class="empty-tips">
@@ -80,9 +80,9 @@
 		},
 		onLoad() {},
 		computed: {
-			...mapState(['hasLogin']),
-			empty(){
-				if (this.cartList.length>0){
+			...mapState(['hasRegistered']),
+			empty() {
+				if (this.cartList.length > 0) {
 					return false
 				}
 				return true
@@ -91,18 +91,16 @@
 		methods: {
 			async loadData() {
 				//请求数据
-				let hasLogin = this.hasLogin
-				if (hasLogin) {
+				if (this.hasRegistered) {
 					let list = await $http.request({
 						url: "/cart/goods",
 						token: true
-					}).then(cartList=>{
-						console.log(cartList)
-						cartList.forEach(item=>{
-							for(let i=0;i<this.cartList.length;i++){
-								let oldItem=this.cartList[i]
-								if (oldItem.id===item.id){
-									this.cartList[i].number=item.number
+					}).then(cartList => {
+						cartList.forEach(item => {
+							for (let i = 0; i < this.cartList.length; i++) {
+								let oldItem = this.cartList[i]
+								if (oldItem.id === item.id) {
+									this.cartList[i].number = item.number
 									return
 								}
 							}
@@ -111,27 +109,39 @@
 							this.cartList.push(item)
 						})
 						let waitDel = []
-						this.cartList.forEach((oldItem,index)=>{
-							for(let i=0;i<cartList.length;i++){
-								let item=cartList[i]
-								if (oldItem.id===item.id){
+						this.cartList.forEach((oldItem, index) => {
+							for (let i = 0; i < cartList.length; i++) {
+								let item = cartList[i]
+								if (oldItem.id === item.id) {
 									return
 								}
 							}
 							waitDel.push(index)
 						})
 						waitDel.reverse()
-						waitDel.forEach(index=>{
-							this.cartList.splice(index,1)
+						waitDel.forEach(index => {
+							this.cartList.splice(index, 1)
 						})
 						this.calcTotal(); //计算总价
 					})
 				}
 			},
-	
 			navToLogin() {
-				$http.login().then(() => {
-					this.loadData()
+				const token = store.state.token;
+				let _self = this;
+				uni.getUserProfile({
+					desc: "用户微信登录",
+					success(value) {
+						store.commit('registered', true)
+						store.commit('saveUserInfo', value.userInfo)
+						$http.request({
+							url: "/user/userInfo",
+							data: value.userInfo,
+							method: "POST",
+							token: token
+						})
+						_self.loadData()
+					}
 				})
 			},
 			//选中状态处理
@@ -156,7 +166,7 @@
 				$http.request({
 					url: `/cart/number?cart_id=${this.cartList[data.index].id}&number=${data.number}`,
 					method: "POST",
-				},false)
+				}, false)
 			},
 			//删除
 			deleteCartItem(index) {
@@ -205,9 +215,8 @@
 			},
 			//创建订单
 			createOrder() {
-				let list = this.cartList;
 				let goodsData = [];
-				list.forEach(item => {
+				this.cartList.forEach(item => {
 					if (item.checked) {
 						goodsData.push(item)
 					}
@@ -219,7 +228,9 @@
 			}
 		},
 		onShow() {
-			this.loadData()
+			if (this.hasRegistered){
+				this.loadData()
+			}
 		}
 	}
 </script>

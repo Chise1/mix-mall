@@ -5,20 +5,14 @@
 	import {
 		mapMutations
 	} from 'vuex';
+	import $http from '@/common/api/request.js'
+	
 	export default {
 		methods: {
 			...mapMutations(['login','saveUserInfo'])
 		},
 		onLaunch: function() {
-			let token = uni.getStorageSync('token') || '';
-			if(token){
-				//更新登陆状态
-				this.login(token)
-			}
-			let userInfo = uni.getStorageSync("userInfo")
-			if (userInfo){
-				this.saveUserInfo(userInfo)
-			}
+			$http.login();
 		},
 		onShow: function() {
 			console.log('App Show')

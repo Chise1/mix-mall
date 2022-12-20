@@ -65,14 +65,12 @@
     "mp-weixin" : {
         /* 小程序特有相关 */
         "usingComponents" : true,
-        "appid" : "wx833cac1c9bdff8b1",
+        "appid" : "wx7177186844f3da26",
         "setting" : {
             "urlCheck" : false,
             "minified" : false
         },
-        "requiredPrivateInfos": [
-            "chooseAddress"
-        ]
+        "requiredPrivateInfos" : [ "chooseAddress" ]
     },
     "vueVersion" : "2"
 }
